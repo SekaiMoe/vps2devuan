@@ -228,7 +228,6 @@ download_and_extract_bootstrap
 save_root_pass
 backup_old_files
 delete_all
-configure_chroot
 install_packages
 restore_root_pass
 cleanup
