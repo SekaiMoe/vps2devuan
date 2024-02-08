@@ -28,6 +28,7 @@ elif [[ $get_arch =~ "aarch64" ]]; then
 elif [[ $get_arch =~ "armhf" ]]; then
     archs=armhf
 else
+    archs=$get_arch
 fi
 
 download_and_extract_bootstrap() {
