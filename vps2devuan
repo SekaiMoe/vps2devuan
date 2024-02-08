@@ -25,7 +25,7 @@ download_and_extract_bootstrap() {
 	mkdir devuan
 	git clone https://git.devuan.org/devuan/debootstrap
 	make -C debootstrap install
-	debootstrap --arch=$(arch) --variant=minbase $version devuan
+	debootstrap --arch=$(arch) --variant=minbase $version devuan $mirror
 	make -C debootstrap uninstall
 	rm -rf debootstrap
 
@@ -65,7 +65,7 @@ delete_all() {
 }
 
 install_packages() {
-	packages="ca-certificates openssh-server openssh-client"
+	packages="ca-certificates openssh-server openssh-client linux-headers-generic linux-image-generic"
 	chroot_exec "apt-get install -y $packages"
 	/usr/sbin/update-ca-certificates
 	apt-get install -y $packages
