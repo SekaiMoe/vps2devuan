@@ -37,7 +37,6 @@ download_and_extract_bootstrap() {
 	git clone https://git.devuan.org/devuan/debootstrap
 	make -C debootstrap install
 	debootstrap --arch=$archs --variant=minbase $version devuan $mirror
-	make -C debootstrap uninstall
 	rm -rf debootstrap
 
 	if grep -E "^nameserver\s+127\." /etc/resolv.conf > /dev/null; then
