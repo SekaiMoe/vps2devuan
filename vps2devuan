@@ -19,13 +19,23 @@ set -e
 
 [ "$(id -u)" -ne 0 ] && echo "This script must be run as root" && exit 1
 
+get_arch=$(arch)
+
+if [[ $get_arch =~ "x86_64" ]]; then
+    archs=amd64
+elif [[ $get_arch =~ "aarch64" ]]; then
+    archs=arm64
+elif [[ $get_arch =~ "armhf" ]]; then
+    archs=armhf
+else
+fi
 
 download_and_extract_bootstrap() {
 
 	mkdir devuan
 	git clone https://git.devuan.org/devuan/debootstrap
 	make -C debootstrap install
-	debootstrap --arch=$(arch) --variant=minbase $version devuan $mirror
+	debootstrap --arch=$archs --variant=minbase $version devuan $mirror
 	make -C debootstrap uninstall
 	rm -rf debootstrap
 
