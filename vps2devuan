@@ -166,7 +166,7 @@ finalize() {
 
 cpu_type=$(uname -m)
 version=ceres
-mirror=http://deb.devuan.org/merged
+mirror=http://deb.devuan.org/devuan
 container=container
 ld=
 
