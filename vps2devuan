@@ -40,7 +40,7 @@ download_and_extract_bootstrap() {
 	mount --make-rslave --rbind /dev /devuan/dev
 	mount --make-rslave --rbind /run /devuan/run
 	mount --bind / /devuan/mnt
-	unset filename
+	ld=$(find /devuan/lib/ /devuan/lib64/ -name "ld-linux*.so*" -print -quit)
 }
 
 save_root_pass() {
@@ -64,9 +64,15 @@ delete_all() {
 	find / \( ! -path '/dev/*' -and ! -path '/proc/*' -and ! -path '/sys/*' -and ! -path '/selinux/*' -and ! -path '/devuan/*' -and ! -name '/swapfile' \) -delete 2>/dev/null || true
 }
 
+chroot_exec() {
+	$ld --library-path /devuan/lib64 \
+	    /devuan/usr/bin/chroot /devuan /bin/bash -c "$*"
+}
+
 install_packages() {
 	packages="ca-certificates openssh-server openssh-client linux-headers-generic linux-image-generic"
-	chroot_exec "apt-get install -y $packages"
+	chroot_exec "apt-get install debootstrap -y"
+	chroot_exec "debootstrap --arch=$(arch) --variant=minbase $version /mnt $mirror"
 	/usr/sbin/update-ca-certificates
 	apt-get install -y $packages
 	unset packages
@@ -162,6 +168,7 @@ cpu_type=$(uname -m)
 version=cares
 mirror=http://deb.devuan.org/merged
 container=container
+ld=
 
 while getopts "s:c:m:h:" opt; do
 	case $opt in
@@ -191,7 +198,7 @@ while getopts "s:c:m:h:" opt; do
 				-h                           Show help messages.
 				-s system version            Set OS version (Default: Tumbleweed).
 				-c container                 Set architecture type for the container image (Default: auto detect).
-				-m mirror                    Set mirror address (Default: http://download.opensuse.org)..
+				-m mirror                    Set mirror address (Default: http://deb.devuan.org)..
 		EOF
 		exit 0
 		;;
