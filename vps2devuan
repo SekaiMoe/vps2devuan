@@ -76,7 +76,7 @@ delete_all() {
 
 chroot_exec() {
 	$ld --library-path /devuan/lib64 \
-	    /devuan/usr/bin/chroot /devuan /bin/bash -c "$*"
+	    /devuan/sbin/chroot /devuan /bin/bash -c "$*"
 }
 
 install_packages() {
