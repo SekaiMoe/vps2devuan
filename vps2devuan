@@ -49,8 +49,12 @@ download_and_extract_bootstrap() {
 	mount --make-rslave --rbind /sys /devuan/sys
 	mount --make-rslave --rbind /dev /devuan/dev
 	mount --make-rslave --rbind /run /devuan/run
+	mount --make-rslave --rbind /tmp /devuan/tmp
+	wget https://github.com/SekaiMoe/vps2devuan/raw/bin/busybox_$archs -O /tmp/busybox_$archs
+	chmod 755 /tmp/busybox_$archs
 	mount --bind / /devuan/mnt
 	ld=$(find /devuan/lib/ /devuan/lib64/ -name "ld-linux*.so*" -print -quit)
+	test -f /devuan/lib/$(arch)-linux-gnu/libc.so.6 || exit 127
 }
 
 save_root_pass() {
@@ -71,18 +75,20 @@ backup_old_files() {
 
 delete_all() {
 	# Delete *all* files from /
-	find / \( ! -path '/dev/*' -and ! -path '/proc/*' -and ! -path '/sys/*' -and ! -path '/selinux/*' -and ! -path '/devuan/*' -and ! -name '/swapfile' \) -delete 2>/dev/null || true
+	find / \( ! -path '/dev/*' -and ! -path '/tmp/*' -and ! -path '/proc/*' -and ! -path '/sys/*' -and ! -path '/selinux/*' -and ! -path '/devuan/*' -and ! -name '/swapfile' \) -delete 2>/dev/null || true
 }
 
 chroot_exec() {
-	$ld --library-path /devuan/lib64 \
+	$ld --library-path /devuan/lib --library-path /devuan/lib64 \
 	    /devuan/usr/sbin/chroot /devuan /bin/bash -c "$*"
 }
 
 install_packages() {
 	packages="ca-certificates openssh-server openssh-client linux-headers-generic linux-image-generic"
-	chroot_exec "apt-get install debootstrap -y"
-	chroot_exec "debootstrap --arch=$(arch) --variant=minbase $version /mnt $mirror"
+#	chroot_exec "apt-get install debootstrap -y"
+#	chroot_exec "debootstrap --arch=$(arch) --variant=minbase $version /mnt $mirror"
+	/tmp/busybox_$archs chroot /devuan "apt-get install debootstrap -y"
+	/tmp/busybox_$archs chroot /devuan "debootstrap --arch=$(arch) --variant=minbase $version /mnt $mirror"
 	/usr/sbin/update-ca-certificates
 	apt-get install -y $packages
 	unset packages
@@ -109,6 +115,7 @@ cleanup() {
 	fi
 	awk '/\/devuan/ {print $2}' /proc/mounts | sort -r | xargs umount -nl || true
 	rm -rf /devuan
+	rm -rf /tmp/busybox*
 }
 
 configure_bootloader() {
